@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIFTEDGANG SCHEDULE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #f0f0f0;
+    --text2: #888;
+    --text3: #555;
+    --accent: #c8f53c;
+    --accent2: #9ef;
+    --match: #c8f53c;
+    --match-bg: rgba(200,245,60,0.12);
+    --personal: #3a7bff;
+    --personal-bg: rgba(58,123,255,0.13);
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --radius: 10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--text2); font-weight: 400; }
+  .week-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── MEMBER BAR ── */
+  .member-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .member-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 10px 6px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: default;
+    transition: border-color .15s;
+    position: relative;
+  }
+  .member-chip:hover { border-color: var(--border2); }
+  .member-chip.inactive { opacity: 0.4; }
+  .member-avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; font-family: var(--mono);
+    flex-shrink: 0;
+  }
+  .chip-toggle {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: var(--text3);
+    transition: all .15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .member-chip:not(.inactive) .chip-toggle { color: var(--text2); }
+  .chip-toggle:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+  .add-member-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent;
+    border: 1px dashed var(--border2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--text3);
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all .15s;
+  }
+  .add-member-btn:hover { color: var(--text2); border-color: #444; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--text2);
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px;
+  }
+  .legend-dot.personal { background: var(--personal); }
+  .legend-dot.match { background: var(--match); }
+
+  /* ── SCHEDULE GRID ── */
+  .grid-wrap { overflow-x: auto; margin-bottom: 32px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 680px;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 6px 12px;
+    text-align: center;
+    font-weight: 400;
+  }
+  thead th.member-name-col { text-align: left; padding-left: 0; min-width: 110px; }
+  thead th.day-header {
+    color: var(--text2);
+    font-size: 11px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  thead .day-date {
+    font-size: 10px;
+    color: var(--text3);
+    font-weight: 400;
+    padding-top: 4px;
+    padding-bottom: 10px;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+
+  .member-cell {
+    padding: 10px 0;
+    vertical-align: middle;
+  }
+  .member-row-name {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500;
+    white-space: nowrap;
+  }
+  .member-row-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; font-family: var(--mono);
+    flex-shrink: 0;
+  }
+
+  .slot-cell { padding: 8px 4px; text-align: center; vertical-align: middle; }
+  .slot-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .12s;
+    position: relative;
+  }
+  .slot-btn:hover { border-color: #555; background: rgba(255,255,255,0.04); }
+  .slot-btn.personal {
+    background: var(--personal-bg);
+    border-color: var(--personal);
+  }
+  .slot-btn.personal svg { display: block; }
+  .slot-btn.match {
+    background: var(--match-bg);
+    border-color: var(--match);
+  }
+  .slot-btn.match svg { display: block; }
+  .slot-btn svg { display: none; width: 12px; height: 12px; }
+  .slot-btn.personal svg { stroke: var(--personal); }
+  .slot-btn.match svg { stroke: var(--match); }
+
+  .session-divider {
+    width: 1px;
+    background: var(--border);
+    padding: 0 !important;
+  }
+
+  /* Tô xanh cột match */
+  .match-col { background: rgba(200,245,60,0.03); }
+
+  /* ── MATCHED SLOTS PANEL ── */
+  .match-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .match-panel-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--match);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .match-count-badge {
+    background: var(--match-bg);
+    color: var(--match);
+    border-radius: 100px;
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+  .match-empty {
+    color: var(--text3);
+    font-size: 13px;
+    font-style: italic;
+  }
+  .match-slots {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .match-slot-card {
+    background: var(--match-bg);
+    border: 1px solid rgba(200,245,60,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 180px;
+    flex: 1;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .match-slot-card:hover { border-color: var(--match); }
+  .match-slot-card.selected { border-color: var(--match); box-shadow: 0 0 0 1px var(--match); }
+  .match-slot-day {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--match);
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .match-slot-session {
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .match-slot-members {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* ── EVENT FORM ── */
+  .event-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-top: 16px;
+    display: none;
+  }
+  .event-form.show { display: block; }
+  .form-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .form-input, .form-textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* Chọn members cho event */
+  .member-checkboxes {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .member-check {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all .15s;
+    user-select: none;
+  }
+  .member-check input { display: none; }
+  .member-check.checked {
+    background: rgba(58,123,255,0.15);
+    border-color: var(--personal);
+    color: #7ab4ff;
+  }
+
+  /* Selected slots list */
+  .selected-slots {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .sel-slot-tag {
+    background: var(--match-bg);
+    border: 1px solid rgba(200,245,60,0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--match);
+    font-family: var(--mono);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sel-slot-tag .remove-slot {
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .sel-slot-tag .remove-slot:hover { color: var(--text); }
+
+  /* ── SEND BUTTON ── */
+  .send-wrap { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .send-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .send-btn:hover { opacity: 0.9; }
+  .send-btn:active { transform: scale(0.98); }
+  .send-btn svg { width: 15px; height: 15px; }
+  .cancel-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: border-color .15s;
+  }
+  .cancel-btn:hover { border-color: #444; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    display: none;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 24px;
+    width: 380px;
+    max-width: 92vw;
+  }
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .modal-input {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: var(--sans);
+    outline: none;
+    width: 100%;
+    margin-bottom: 14px;
+    transition: border-color .15s;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-confirm {
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+  }
+  .modal-cancel {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: var(--sans);
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 200;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-title { font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+
+  /* ── SECTION HEADER ── */
+  .section-sep {
+    display: flex; align-items: center; gap: 12px;
+    margin: 28px 0 16px;
+  }
+  .section-sep-line { flex: 1; height: 1px; background: var(--border); }
+  .section-sep-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  @media (max-width: 600px) {
+    header { padding: 16px; }
+    .main { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">GIFTED<span>GANG</span> SCHEDULE</div>
+    <div class="week-label" id="week-range">Đang tải...</div>
+  </div>
+  <button class="add-member-btn" onclick="openAddMember()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Thêm thành viên
+  </button>
+</header>
+
+<div class="main">
+
+  <!-- Member chips -->
+  <div class="member-bar" id="member-bar"></div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot personal"></div> Rảnh của bạn</div>
+    <div class="legend-item"><div class="legend-dot match"></div> Trùng lịch (cả nhóm active)</div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <table id="schedule-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Match panel -->
+  <div class="section-sep">
+    <div class="section-sep-line"></div>
+    <div class="section-sep-label">Lịch trùng</div>
+    <div class="section-sep-line"></div>
+  </div>
+
+  <div class="match-panel">
+    <div class="match-panel-title">
+      Slot anh em đều rảnh
+      <span class="match-count-badge" id="match-count">0</span>
+    </div>
+    <div id="match-slots-area">
+      <div class="match-empty">Chưa có slot nào trùng. Hãy tick lịch rảnh của anh em!</div>
+    </div>
+  </div>
+
+  <!-- Event form -->
+  <div class="section-sep">
+    <div class="section-sep-line"></div>
+    <div class="section-sep-label">Tạo lịch hẹn</div>
+    <div class="section-sep-line"></div>
+  </div>
+
+  <div class="event-form" id="event-form">
+    <div class="form-title">Chi tiết buổi quay</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">Tên buổi quay *</label>
+        <input class="form-input" id="ev-title" placeholder="VD: Quay video review iPhone 16..." />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Slot đã chọn</label>
+        <div class="selected-slots" id="selected-slots-display"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Giờ bắt đầu</label>
+        <input class="form-input" id="ev-start" type="time" value="09:00" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Giờ kết thúc</label>
+        <input class="form-input" id="ev-end" type="time" value="12:00" />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Nội dung chi tiết</label>
+        <textarea class="form-textarea" id="ev-desc" placeholder="Nội dung buổi quay, chuẩn bị gì, địa điểm..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Gửi cho thành viên</label>
+        <div class="member-checkboxes" id="ev-members"></div>
+      </div>
+    </div>
+    <div class="send-wrap">
+      <button class="send-btn" onclick="sendToCalendar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Gửi lên Google Calendar
+      </button>
+      <button class="cancel-btn" onclick="cancelForm()">Huỷ</button>
+    </div>
+  </div>
+
+  <!-- Placeholder when no match selected -->
+  <div id="form-placeholder" style="padding:16px 0;color:var(--text3);font-size:13px;">
+    ← Chọn một slot trùng lịch ở trên để tạo lịch hẹn
+  </div>
+
+</div>
+
+<!-- Add member modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">Thêm thành viên mới</div>
+    <input class="modal-input" id="modal-input" placeholder="Nhập tên thành viên..." onkeydown="if(event.key==='Enter')confirmAddMember()" />
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Huỷ</button>
+      <button class="modal-confirm" onclick="confirmAddMember()">Thêm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-title" id="toast-title"></div>
+  <div id="toast-msg"></div>
+</div>
+
+<script>
+// ── DATA ──
+const DAYS = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
+const SESSIONS = ['Sáng','Chiều','Tối'];
+const SESSION_SHORT = ['S','C','T'];
+const COLORS = ['#3a7bff','#ff6b6b','#f7c948','#4ecdc4','#a78bfa','#fb923c','#34d399','#f472b6','#60a5fa','#a3e635'];
+
+let members = [
+  { id: 1, name: 'Minh', active: true },
+  { id: 2, name: 'Hùng', active: true },
+  { id: 3, name: 'Linh', active: true },
+];
+let nextId = 4;
+
+// slots[memberId][dayIndex][sessionIndex] = true/false
+let slots = {};
+
+// selected match slots for event form
+let selectedMatchSlots = [];
+
+function initSlots(memberId) {
+  slots[memberId] = {};
+  for (let d = 0; d < 7; d++) {
+    slots[memberId][d] = {};
+    for (let s = 0; s < 3; s++) {
+      slots[memberId][d][s] = false;
+    }
+  }
+}
+
+members.forEach(m => initSlots(m.id));
+
+// ── WEEK DATES ──
+function getWeekDates() {
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+const weekDates = getWeekDates();
+const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+document.getElementById('week-range').textContent =
+  `Tuần ${fmt(weekDates[0])} – ${fmt(weekDates[6])}`;
+
+// ── COLOR PER MEMBER ──
+function memberColor(index) {
+  return COLORS[index % COLORS.length];
+}
+function initials(name) {
+  return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+}
+
+// ── RENDER MEMBER BAR ──
+function renderMemberBar() {
+  const bar = document.getElementById('member-bar');
+  bar.innerHTML = '';
+  members.forEach((m, i) => {
+    const col = memberColor(i);
+    const chip = document.createElement('div');
+    chip.className = 'member-chip' + (m.active ? '' : ' inactive');
+    chip.innerHTML = `
+      <div class="member-avatar" style="background:${col}22;color:${col}">${initials(m.name)}</div>
+      <span>${m.name}</span>
+      <button class="chip-toggle" title="${m.active ? 'Tạm ẩn' : 'Bật lại'}" onclick="toggleMember(${m.id})">
+        ${m.active ? '●' : '○'}
+      </button>
+    `;
+    bar.appendChild(chip);
+  });
+}
+
+// ── RENDER TABLE ──
+function renderTable() {
+  const thead = document.getElementById('table-head');
+  const tbody = document.getElementById('table-body');
+
+  // HEAD — row 1: member col + day headers (colspan 3)
+  let headHtml = '<tr><th class="member-name-col">THÀNH VIÊN</th>';
+  DAYS.forEach((d, di) => {
+    headHtml += `<th colspan="4" class="day-header">${d}</th>`;
+  });
+  headHtml += '</tr>';
+
+  // HEAD — row 2: dates + session labels
+  headHtml += '<tr><th></th>';
+  DAYS.forEach((d, di) => {
+    headHtml += `<th class="day-date" colspan="3">${fmt(weekDates[di])}</th><th></th>`;
+  });
+  headHtml += '</tr>';
+
+  // HEAD — row 3: session labels
+  headHtml += '<tr><th></th>';
+  DAYS.forEach((d, di) => {
+    SESSIONS.forEach((s, si) => {
+      headHtml += `<th style="font-size:10px;padding-bottom:8px">${SESSION_SHORT[si]}</th>`;
+    });
+    headHtml += '<th></th>';
+  });
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  // BODY
+  const matches = calcMatches();
+  let bodyHtml = '';
+  members.forEach((m, mi) => {
+    if (!m.active) return;
+    const col = memberColor(mi);
+    bodyHtml += `<tr>`;
+    bodyHtml += `<td class="member-cell">
+      <div class="member-row-name">
+        <div class="member-row-avatar" style="background:${col}22;color:${col}">${initials(m.name)}</div>
+        ${m.name}
+      </div>
+    </td>`;
+    DAYS.forEach((day, di) => {
+      SESSIONS.forEach((ses, si) => {
+        const isPersonal = slots[m.id][di][si];
+        const isMatch = matches[di][si];
+        const cls = isMatch ? 'match' : (isPersonal ? 'personal' : '');
+        const colClass = isMatch ? ' match-col' : '';
+        bodyHtml += `<td class="slot-cell${colClass}">
+          <button class="slot-btn ${cls}" onclick="toggleSlot(${m.id},${di},${si})" title="${m.name} — ${day} ${ses}">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4,12 9,17 20,7"/>
+            </svg>
+          </button>
+        </td>`;
+      });
+      bodyHtml += `<td class="session-divider"></td>`;
+    });
+    bodyHtml += `</tr>`;
+  });
+  tbody.innerHTML = bodyHtml;
+
+  renderMatchPanel(matches);
+}
+
+// ── CALC MATCHES ──
+function calcMatches() {
+  const activeMembers = members.filter(m => m.active);
+  const result = {};
+  for (let d = 0; d < 7; d++) {
+    result[d] = {};
+    for (let s = 0; s < 3; s++) {
+      result[d][s] = activeMembers.length > 0 &&
+        activeMembers.every(m => slots[m.id][d][s]);
+    }
+  }
+  return result;
+}
+
+// ── RENDER MATCH PANEL ──
+function renderMatchPanel(matches) {
+  const area = document.getElementById('match-slots-area');
+  const countBadge = document.getElementById('match-count');
+  const matchList = [];
+  for (let d = 0; d < 7; d++) {
+    for (let s = 0; s < 3; s++) {
+      if (matches[d][s]) matchList.push({ d, s });
+    }
+  }
+  countBadge.textContent = matchList.length;
+  if (matchList.length === 0) {
+    area.innerHTML = '<div class="match-empty">Chưa có slot nào trùng. Hãy tick lịch rảnh của anh em!</div>';
+    return;
+  }
+  const activeNames = members.filter(m=>m.active).map(m=>m.name).join(', ');
+  let html = '<div class="match-slots">';
+  matchList.forEach(({d,s}) => {
+    const key = `${d}-${s}`;
+    const isSelected = selectedMatchSlots.some(x=>x.d===d&&x.s===s);
+    html += `<div class="match-slot-card${isSelected?' selected':''}" onclick="toggleSelectSlot(${d},${s})" title="Bấm để thêm vào lịch hẹn">
+      <div class="match-slot-day">${DAYS[d]} — ${SESSIONS[s]}</div>
+      <div class="match-slot-session">${fmt(weekDates[d])}</div>
+      <div class="match-slot-members">${activeNames}</div>
+    </div>`;
+  });
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+// ── TOGGLE SLOT ──
+function toggleSlot(memberId, dayIdx, sesIdx) {
+  slots[memberId][dayIdx][sesIdx] = !slots[memberId][dayIdx][sesIdx];
+  renderTable();
+  updateFormSlots();
+}
+
+// ── TOGGLE MEMBER ──
+function toggleMember(id) {
+  const m = members.find(x=>x.id===id);
+  if (m) m.active = !m.active;
+  renderMemberBar();
+  renderTable();
+}
+
+// ── SELECT MATCH SLOT FOR EVENT ──
+function toggleSelectSlot(d, s) {
+  const idx = selectedMatchSlots.findIndex(x=>x.d===d&&x.s===s);
+  if (idx >= 0) {
+    selectedMatchSlots.splice(idx, 1);
+  } else {
+    selectedMatchSlots.push({d,s});
+  }
+  const matches = calcMatches();
+  renderMatchPanel(matches);
+  updateFormSlots();
+  const form = document.getElementById('event-form');
+  const ph = document.getElementById('form-placeholder');
+  if (selectedMatchSlots.length > 0) {
+    form.classList.add('show');
+    ph.style.display = 'none';
+    renderEventMemberCheckboxes();
+  } else {
+    form.classList.remove('show');
+    ph.style.display = 'block';
+  }
+}
+
+function updateFormSlots() {
+  const display = document.getElementById('selected-slots-display');
+  if (!display) return;
+  if (selectedMatchSlots.length === 0) {
+    display.innerHTML = '<span style="color:var(--text3);font-size:12px">Chưa chọn slot nào</span>';
+    return;
+  }
+  display.innerHTML = selectedMatchSlots.map(({d,s}) =>
+    `<span class="sel-slot-tag">
+      ${DAYS[d]} ${SESSIONS[s]} (${fmt(weekDates[d])})
+      <span class="remove-slot" onclick="toggleSelectSlot(${d},${s})">×</span>
+    </span>`
+  ).join('');
+}
+
+function renderEventMemberCheckboxes() {
+  const wrap = document.getElementById('ev-members');
+  const activeMembers = members.filter(m=>m.active);
+  wrap.innerHTML = activeMembers.map((m,i) => {
+    const col = memberColor(members.indexOf(m));
+    return `<label class="member-check checked">
+      <input type="checkbox" checked data-id="${m.id}">
+      <div style="width:14px;height:14px;border-radius:50%;background:${col}33;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${col}">${initials(m.name)}</div>
+      ${m.name}
+    </label>`;
+  }).join('');
+  wrap.querySelectorAll('label.member-check').forEach(lbl => {
+    lbl.addEventListener('click', () => {
+      const cb = lbl.querySelector('input');
+      // toggled after click
+      setTimeout(() => lbl.classList.toggle('checked', cb.checked), 0);
+    });
+  });
+}
+
+function cancelForm() {
+  selectedMatchSlots = [];
+  document.getElementById('event-form').classList.remove('show');
+  document.getElementById('form-placeholder').style.display = 'block';
+  const matches = calcMatches();
+  renderMatchPanel(matches);
+}
+
+// ── SEND TO CALENDAR ──
+function sendToCalendar() {
+  const title = document.getElementById('ev-title').value.trim();
+  const startTime = document.getElementById('ev-start').value;
+  const endTime = document.getElementById('ev-end').value;
+  const desc = document.getElementById('ev-desc').value.trim();
+
+  if (!title) {
+    showToast('Thiếu thông tin', 'Hãy nhập tên buổi quay nhé!', false);
+    return;
+  }
+  if (selectedMatchSlots.length === 0) {
+    showToast('Chưa chọn slot', 'Chọn ít nhất một slot trùng lịch!', false);
+    return;
+  }
+
+  const checkedMembers = [...document.querySelectorAll('#ev-members input:checked')]
+    .map(cb => members.find(m=>m.id==cb.dataset.id)?.name)
+    .filter(Boolean);
+
+  // Build Google Calendar links for each slot
+  const links = [];
+  selectedMatchSlots.forEach(({d,s}) => {
+    const date = weekDates[d];
+    const dateStr = date.toISOString().slice(0,10).replace(/-/g,'');
+    const [sh,sm] = startTime.split(':');
+    const [eh,em] = endTime.split(':');
+    const startDt = `${dateStr}T${sh}${sm}00`;
+    const endDt = `${dateStr}T${eh}${em}00`;
+    const fullTitle = encodeURIComponent(`${title} — ${SESSIONS[s]}`);
+    const details = encodeURIComponent(`${desc}\n\nThành viên: ${checkedMembers.join(', ')}`);
+    const guests = encodeURIComponent(checkedMembers.map(n=>`${n}@gmail.com`).join(','));
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${fullTitle}&dates=${startDt}/${endDt}&details=${details}`;
+    links.push({ label: `${DAYS[d]} ${SESSIONS[s]}`, url });
+  });
+
+  // Open first link, show toast with all
+  links.forEach((l, i) => setTimeout(() => window.open(l.url, '_blank'), i * 400));
+
+  showToast(
+    `Đang mở Google Calendar`,
+    `${links.length} sự kiện cho "${title}" — ${checkedMembers.join(', ')}`,
+    true
+  );
+}
+
+// ── ADD MEMBER ──
+function openAddMember() {
+  document.getElementById('modal-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('modal-input').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  document.getElementById('modal-input').value = '';
+}
+function confirmAddMember() {
+  const name = document.getElementById('modal-input').value.trim();
+  if (!name) return;
+  const newMember = { id: nextId++, name, active: true };
+  members.push(newMember);
+  initSlots(newMember.id);
+  closeModal();
+  renderMemberBar();
+  renderTable();
+  showToast('Đã thêm thành viên', `${name} đã được thêm vào nhóm!`, true);
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(title, msg, ok) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.borderColor = ok ? 'var(--accent)' : '#ff6b6b';
+  document.getElementById('toast-title').style.color = ok ? 'var(--accent)' : '#ff6b6b';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ── INIT ──
+renderMemberBar();
+renderTable();
+updateFormSlots();
+document.getElementById('form-placeholder').style.display = 'block';
+</script>
+</body>
+</html>
