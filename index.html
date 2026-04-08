@@ -112,6 +112,23 @@
   }
   .member-chip:not(.inactive) .chip-toggle { color: var(--text2); }
   .chip-toggle:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .chip-delete {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    color: var(--text3);
+    transition: all .15s;
+    flex-shrink: 0;
+    line-height: 1;
+    opacity: 0;
+    margin-left: -4px;
+  }
+  .member-chip:hover .chip-delete { opacity: 1; }
+  .chip-delete:hover { color: #ff6b6b; background: rgba(255,107,107,0.12); border-color: rgba(255,107,107,0.3); }
 
   .add-member-btn {
     display: flex; align-items: center; gap: 6px;
@@ -624,7 +641,8 @@
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-title">Thêm thành viên mới</div>
-    <input class="modal-input" id="modal-input" placeholder="Nhập tên thành viên..." onkeydown="if(event.key==='Enter')confirmAddMember()" />
+    <input class="modal-input" id="modal-input" placeholder="Tên thành viên..." onkeydown="if(event.key==='Enter')document.getElementById('modal-email').focus()" />
+    <input class="modal-input" id="modal-email" type="email" placeholder="Email Gmail (để gửi lịch) — có thể bỏ trống" onkeydown="if(event.key==='Enter')confirmAddMember()" style="margin-top:-4px" />
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeModal()">Huỷ</button>
       <button class="modal-confirm" onclick="confirmAddMember()">Thêm</button>
@@ -646,9 +664,9 @@ const SESSION_SHORT = ['S','C','T'];
 const COLORS = ['#3a7bff','#ff6b6b','#f7c948','#4ecdc4','#a78bfa','#fb923c','#34d399','#f472b6','#60a5fa','#a3e635'];
 
 let members = [
-  { id: 1, name: 'Minh', active: true },
-  { id: 2, name: 'Hùng', active: true },
-  { id: 3, name: 'Linh', active: true },
+  { id: 1, name: 'Minh', email: '', active: true },
+  { id: 2, name: 'Hùng', email: '', active: true },
+  { id: 3, name: 'Linh', email: '', active: true },
 ];
 let nextId = 4;
 
@@ -706,12 +724,15 @@ function renderMemberBar() {
     const col = memberColor(i);
     const chip = document.createElement('div');
     chip.className = 'member-chip' + (m.active ? '' : ' inactive');
+    chip.title = m.email ? m.email : 'Chưa có email';
     chip.innerHTML = `
       <div class="member-avatar" style="background:${col}22;color:${col}">${initials(m.name)}</div>
       <span>${m.name}</span>
-      <button class="chip-toggle" title="${m.active ? 'Tạm ẩn' : 'Bật lại'}" onclick="toggleMember(${m.id})">
+      ${m.email ? `<span style="font-size:10px;color:var(--text3);margin-left:-2px">✓</span>` : ''}
+      <button class="chip-toggle" title="${m.active ? 'Tạm ẩn' : 'Bật lại'}" onclick="event.stopPropagation();toggleMember(${m.id})">
         ${m.active ? '●' : '○'}
       </button>
+      <button class="chip-delete" title="Xoá ${m.name}" onclick="event.stopPropagation();deleteMember(${m.id})">×</button>
     `;
     bar.appendChild(chip);
   });
@@ -924,11 +945,12 @@ function sendToCalendar() {
     return;
   }
 
-  const checkedMembers = [...document.querySelectorAll('#ev-members input:checked')]
-    .map(cb => members.find(m=>m.id==cb.dataset.id)?.name)
-    .filter(Boolean);
+  const checkedIds = [...document.querySelectorAll('#ev-members input:checked')]
+    .map(cb => parseInt(cb.dataset.id));
+  const checkedMembers = members.filter(m => checkedIds.includes(m.id));
+  const names = checkedMembers.map(m=>m.name).join(', ');
+  const emails = checkedMembers.map(m=>m.email).filter(Boolean);
 
-  // Build Google Calendar links for each slot
   const links = [];
   selectedMatchSlots.forEach(({d,s}) => {
     const date = weekDates[d];
@@ -937,21 +959,35 @@ function sendToCalendar() {
     const [eh,em] = endTime.split(':');
     const startDt = `${dateStr}T${sh}${sm}00`;
     const endDt = `${dateStr}T${eh}${em}00`;
-    const fullTitle = encodeURIComponent(`${title} — ${SESSIONS[s]}`);
-    const details = encodeURIComponent(`${desc}\n\nThành viên: ${checkedMembers.join(', ')}`);
-    const guests = encodeURIComponent(checkedMembers.map(n=>`${n}@gmail.com`).join(','));
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${fullTitle}&dates=${startDt}/${endDt}&details=${details}`;
+    const fullTitle = encodeURIComponent(`${title}`);
+    const detailText = [desc, `Thành viên: ${names}`, emails.length ? `Email: ${emails.join(', ')}` : ''].filter(Boolean).join('\n\n');
+    const details = encodeURIComponent(detailText);
+    let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${fullTitle}&dates=${startDt}/${endDt}&details=${details}`;
+    if (emails.length) url += `&add=${encodeURIComponent(emails.join(','))}`;
     links.push({ label: `${DAYS[d]} ${SESSIONS[s]}`, url });
   });
 
-  // Open first link, show toast with all
-  links.forEach((l, i) => setTimeout(() => window.open(l.url, '_blank'), i * 400));
+  links.forEach((l, i) => setTimeout(() => window.open(l.url, '_blank'), i * 500));
 
-  showToast(
-    `Đang mở Google Calendar`,
-    `${links.length} sự kiện cho "${title}" — ${checkedMembers.join(', ')}`,
-    true
-  );
+  const emailNote = emails.length
+    ? `Email đã điền sẵn cho ${emails.length} người`
+    : 'Lưu ý: thành viên chưa có email, hãy thêm tay trong Calendar';
+  showToast(`Đang mở Google Calendar (${links.length} sự kiện)`, emailNote, emails.length > 0);
+}
+
+// ── DELETE MEMBER ──
+function deleteMember(id) {
+  const m = members.find(x=>x.id===id);
+  if (!m) return;
+  if (!confirm(`Xoá "${m.name}" khỏi nhóm? Lịch của họ sẽ bị xoá.`)) return;
+  members = members.filter(x=>x.id!==id);
+  delete slots[id];
+  selectedMatchSlots = [];
+  document.getElementById('event-form').classList.remove('show');
+  document.getElementById('form-placeholder').style.display = 'block';
+  renderMemberBar();
+  renderTable();
+  showToast('Đã xoá', `${m.name} đã được xoá khỏi nhóm`, true);
 }
 
 // ── ADD MEMBER ──
@@ -962,17 +998,19 @@ function openAddMember() {
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('show');
   document.getElementById('modal-input').value = '';
+  document.getElementById('modal-email').value = '';
 }
 function confirmAddMember() {
   const name = document.getElementById('modal-input').value.trim();
+  const email = document.getElementById('modal-email').value.trim();
   if (!name) return;
-  const newMember = { id: nextId++, name, active: true };
+  const newMember = { id: nextId++, name, email, active: true };
   members.push(newMember);
   initSlots(newMember.id);
   closeModal();
   renderMemberBar();
   renderTable();
-  showToast('Đã thêm thành viên', `${name} đã được thêm vào nhóm!`, true);
+  showToast('Đã thêm thành viên', `${name} đã được thêm vào nhóm!${email ? ' Email đã lưu.' : ' (Chưa có email)'}`, true);
 }
 
 // ── TOAST ──
