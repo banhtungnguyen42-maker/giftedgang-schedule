@@ -870,63 +870,133 @@
     }
 
     @media (max-width: 600px) {
-      header { padding: 16px; }
-      .main { padding: 16px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-group.full { grid-column: 1; }
+      header {
+        padding: 16px;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full {
+        grid-column: 1;
+      }
     }
 
     /* ── ARCHIVE ── */
-    .archive-section { margin-top: 8px; }
+    .archive-section {
+      margin-top: 8px;
+    }
+
     .archive-week {
       border: 1px solid var(--border);
       border-radius: var(--radius);
       margin-bottom: 10px;
       overflow: hidden;
     }
+
     .archive-week-header {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 12px 18px;
       background: var(--surface);
       cursor: pointer;
       user-select: none;
       transition: background .15s;
     }
-    .archive-week-header:hover { background: var(--surface2); }
+
+    .archive-week-header:hover {
+      background: var(--surface2);
+    }
+
     .archive-week-label {
       font-family: var(--mono);
       font-size: 12px;
       color: var(--text2);
     }
+
     .archive-chevron {
       font-size: 10px;
       color: var(--text3);
       transition: transform .2s;
     }
-    .archive-week.open .archive-chevron { transform: rotate(180deg); }
+
+    .archive-week.open .archive-chevron {
+      transform: rotate(180deg);
+    }
+
     .archive-week-body {
       display: none;
       padding: 16px;
       background: var(--bg);
     }
-    .archive-week.open .archive-week-body { display: block; }
-    .archive-table-wrap { overflow-x: auto; }
-    .archive-table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 11px; }
+
+    .archive-week.open .archive-week-body {
+      display: block;
+    }
+
+    .archive-table-wrap {
+      overflow-x: auto;
+    }
+
+    .archive-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+      font-size: 11px;
+    }
+
     .archive-table thead th {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
-      text-transform: uppercase; color: var(--text3);
-      padding: 0 4px 8px; text-align: center;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 0 4px 8px;
+      text-align: center;
     }
-    .archive-table tbody tr { border-bottom: 1px solid var(--border); }
+
+    .archive-table tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+
     .archive-slot {
-      width: 22px; height: 22px; border-radius: 5px;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
       border: 1px solid var(--border2);
-      display: inline-flex; align-items: center; justify-content: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .archive-slot.personal { background: var(--personal-bg); border-color: var(--personal); }
-    .archive-slot svg { display: none; width: 10px; height: 10px; }
-    .archive-slot.personal svg { display: block; stroke: var(--personal); }
-    .archive-empty { color: var(--text3); font-size: 13px; font-style: italic; padding: 8px 0; }
+
+    .archive-slot.personal {
+      background: var(--personal-bg);
+      border-color: var(--personal);
+    }
+
+    .archive-slot svg {
+      display: none;
+      width: 10px;
+      height: 10px;
+    }
+
+    .archive-slot.personal svg {
+      display: block;
+      stroke: var(--personal);
+    }
+
+    .archive-empty {
+      color: var(--text3);
+      font-size: 13px;
+      font-style: italic;
+      padding: 8px 0;
+    }
   </style>
 </head>
 
@@ -992,11 +1062,11 @@
     </div>
 
     <div class="event-form" id="event-form">
-      <div class="form-title">Chi tiết buổi quay</div>
+      <div class="form-title">Chi tiết buổi hẹn</div>
       <div class="form-grid">
         <div class="form-group full">
-          <label class="form-label">Tên buổi quay *</label>
-          <input class="form-input" id="ev-title" placeholder="VD: Quay video review iPhone 16..." />
+          <label class="form-label">Tên buổi *</label>
+          <input class="form-input" id="ev-title" placeholder="VD: Quay MV Lãnh Đạo..." />
         </div>
         <div class="form-group full">
           <label class="form-label">Slot đã chọn</label>
@@ -1011,9 +1081,25 @@
           <input class="form-input" id="ev-end" type="time" value="12:00" />
         </div>
         <div class="form-group full">
-          <label class="form-label">Nội dung chi tiết</label>
-          <textarea class="form-textarea" id="ev-desc"
-            placeholder="Nội dung buổi quay, chuẩn bị gì, địa điểm..."></textarea>
+          <label class="form-label">Địa điểm (Google Maps)</label>
+          <input class="form-input" id="ev-location" placeholder="VD: 281 Nguyễn Văn Tăng, Long Bình, TP.HCM" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Link họp online (nếu có)</label>
+          <input class="form-input" id="ev-meeting" placeholder="Google Meet / Zoom link..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nhắc trước</label>
+          <select class="form-input" id="ev-reminder">
+            <option value="10">10 phút</option>
+            <option value="30" selected>30 phút</option>
+            <option value="60">1 tiếng</option>
+            <option value="1440">1 ngày</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Đầu việc cho từng buổi</label>
+          <div id="slot-tasks-container"></div>
         </div>
         <div class="form-group full">
           <label class="form-label">Gửi cho thành viên</label>
@@ -1093,10 +1179,10 @@
     const archiveRef = ref(db, 'giftedgang/archive');
 
     // ── CONSTANTS ──
-    const DAYS = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
-    const SESSIONS = ['Sáng','Chiều','Tối'];
-    const SESSION_SHORT = ['S','C','T'];
-    const COLORS = ['#3a7bff','#ff6b6b','#f7c948','#4ecdc4','#a78bfa','#fb923c','#34d399','#f472b6','#60a5fa','#a3e635'];
+    const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+    const SESSIONS = ['Sáng', 'Chiều', 'Tối'];
+    const SESSION_SHORT = ['S', 'C', 'T'];
+    const COLORS = ['#3a7bff', '#ff6b6b', '#f7c948', '#4ecdc4', '#a78bfa', '#fb923c', '#34d399', '#f472b6', '#60a5fa', '#a3e635'];
 
     // ── STATE ──
     let members = [];
@@ -1106,69 +1192,69 @@
     let selectedMatchSlots = [];
     let thisWeekMonday = null;
     let nextWeekMonday = null;
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
 
     // ── DATE HELPERS ──
     function getMondayOf(date) {
       const d = new Date(date);
       const day = d.getDay();
       d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-      d.setHours(0,0,0,0);
+      d.setHours(0, 0, 0, 0);
       return d;
     }
-    function getMondayISO(date) { return getMondayOf(date).toISOString().slice(0,10); }
+    function getMondayISO(date) { return getMondayOf(date).toISOString().slice(0, 10); }
     function addDays(isoStr, n) {
       const d = new Date(isoStr + 'T00:00:00');
       d.setDate(d.getDate() + n);
-      return d.toISOString().slice(0,10);
+      return d.toISOString().slice(0, 10);
     }
 
     // ── ĐỊNH DẠNG NGÀY VIỆT NAM: DD/MM/YYYY ──
     function fmtVN(date) {
       const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
       return `${dd}/${mm}/${d.getFullYear()}`;
     }
     function fmtShort(date) {
       const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
-      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
     function getWeekDates(mondayISO) {
-      return Array.from({length:7}, (_,i) => {
+      return Array.from({ length: 7 }, (_, i) => {
         const d = new Date(mondayISO + 'T00:00:00');
         d.setDate(d.getDate() + i); return d;
       });
     }
-    function isSameDay(a,b) { return a.getDate()===b.getDate()&&a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear(); }
+    function isSameDay(a, b) { return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear(); }
     function isPast(d) { return d < today; }
-    const memberColor = (i) => COLORS[i%COLORS.length];
-    const initials = (n) => n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const memberColor = (i) => COLORS[i % COLORS.length];
+    const initials = (n) => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     // ── WEEK INFO ──
     function getWeeks() {
       const tm = thisWeekMonday || getMondayISO(today);
-      const nm = nextWeekMonday || addDays(tm,7);
+      const nm = nextWeekMonday || addDays(tm, 7);
       return [
-        { key:'this', mondayISO:tm, label:'Tuần này', dates:getWeekDates(tm) },
-        { key:'next', mondayISO:nm, label:'Tuần sau', dates:getWeekDates(nm) },
+        { key: 'this', mondayISO: tm, label: 'Tuần này', dates: getWeekDates(tm) },
+        { key: 'next', mondayISO: nm, label: 'Tuần sau', dates: getWeekDates(nm) },
       ];
     }
 
     // ── SLOTS INIT ──
     function initSlots(memberId) {
-      ['this','next'].forEach(key => {
-        if(!slots[key]) slots[key]={};
-        slots[key][memberId]={};
-        for(let d=0;d<7;d++){slots[key][memberId][d]={};for(let s=0;s<3;s++)slots[key][memberId][d][s]=false;}
+      ['this', 'next'].forEach(key => {
+        if (!slots[key]) slots[key] = {};
+        slots[key][memberId] = {};
+        for (let d = 0; d < 7; d++) { slots[key][memberId][d] = {}; for (let s = 0; s < 3; s++)slots[key][memberId][d][s] = false; }
       });
     }
     function ensureSlots() {
-      members.forEach(m => ['this','next'].forEach(key => {
-        if(!slots[key]) slots[key]={};
-        if(!slots[key][m.id]){
-          slots[key][m.id]={};
-          for(let d=0;d<7;d++){slots[key][m.id][d]={};for(let s=0;s<3;s++)slots[key][m.id][d][s]=false;}
+      members.forEach(m => ['this', 'next'].forEach(key => {
+        if (!slots[key]) slots[key] = {};
+        if (!slots[key][m.id]) {
+          slots[key][m.id] = {};
+          for (let d = 0; d < 7; d++) { slots[key][m.id][d] = {}; for (let s = 0; s < 3; s++)slots[key][m.id][d][s] = false; }
         }
       }));
     }
@@ -1199,12 +1285,12 @@
       }
 
       // CẦN ROTATE: Tuần cũ → Kho lưu trữ
-      const archiveKey = storedThis.replace(/-/g,'_');
+      const archiveKey = storedThis.replace(/-/g, '_');
       await set(ref(db, `giftedgang/archive/${archiveKey}`), {
         members: data.members || [],
         slots: data.slots?.this || {},
         mondayISO: storedThis,
-        weekLabel: `${fmtVN(storedThis)} – ${fmtVN(addDays(storedThis,6))}`,
+        weekLabel: `${fmtVN(storedThis)} – ${fmtVN(addDays(storedThis, 6))}`,
         archivedAt: Date.now()
       });
 
@@ -1229,18 +1315,18 @@
         thisWeekMonday = todayMondayISO;
         nextWeekMonday = addDays(todayMondayISO, 7);
         members = [
-          { id:1, name:'Minh', email:'', active:true },
-          { id:2, name:'Hùng', email:'', active:true },
-          { id:3, name:'Linh', email:'', active:true },
+          { id: 1, name: 'Minh', email: '', active: true },
+          { id: 2, name: 'Hùng', email: '', active: true },
+          { id: 3, name: 'Linh', email: '', active: true },
         ];
-        nextId = 4; slots = { this:{}, next:{} };
+        nextId = 4; slots = { this: {}, next: {} };
         members.forEach(m => initSlots(m.id));
         saveData(); return;
       }
       const rotated = await checkAndRotate(data);
       if (rotated) return;
       members = data.members || [];
-      slots = data.slots || { this:{}, next:{} };
+      slots = data.slots || { this: {}, next: {} };
       nextId = data.nextId || 1;
       ensureSlots();
       refreshUI();
@@ -1259,25 +1345,25 @@
         container.innerHTML = '<div class="archive-empty">Chưa có dữ liệu lưu trữ nào. Sau khi sang tuần mới, lịch tuần cũ sẽ tự động lưu vào đây.</div>';
         return;
       }
-      const sorted = Object.entries(archiveData).sort((a,b) => b[0].localeCompare(a[0]));
+      const sorted = Object.entries(archiveData).sort((a, b) => b[0].localeCompare(a[0]));
       container.innerHTML = sorted.map(([key, data]) => {
-        const mondayISO = data.mondayISO || key.replace(/_/g,'-');
+        const mondayISO = data.mondayISO || key.replace(/_/g, '-');
         const weekDates = getWeekDates(mondayISO);
-        const label = `${fmtVN(mondayISO)} – ${fmtVN(addDays(mondayISO,6))}`;
+        const label = `${fmtVN(mondayISO)} – ${fmtVN(addDays(mondayISO, 6))}`;
         const archiveMembers = data.members || [];
         const archiveSlots = data.slots || {};
 
         let tableHtml = `<div class="archive-table-wrap"><table class="archive-table"><thead><tr><th style="text-align:left;min-width:90px">THÀNH VIÊN</th>`;
-        DAYS.forEach((d,di) => tableHtml += `<th colspan="3">${d}<br><span style="opacity:0.6">${fmtShort(weekDates[di])}</span></th><th></th>`);
+        DAYS.forEach((d, di) => tableHtml += `<th colspan="3">${d}<br><span style="opacity:0.6">${fmtShort(weekDates[di])}</span></th><th></th>`);
         tableHtml += '</tr></thead><tbody>';
         archiveMembers.forEach((m, mi) => {
           if (!m.active) return;
           const col = memberColor(mi);
           tableHtml += `<tr><td class="member-cell"><div class="member-row-name"><div class="member-row-avatar" style="background:${col}22;color:${col};width:22px;height:22px;font-size:9px">${initials(m.name)}</div>${m.name}</div></td>`;
-          DAYS.forEach((_,di) => {
-            SESSIONS.forEach((_,si) => {
+          DAYS.forEach((_, di) => {
+            SESSIONS.forEach((_, si) => {
               const val = archiveSlots?.[m.id]?.[di]?.[si];
-              tableHtml += `<td style="padding:6px 3px;text-align:center"><div class="archive-slot${val?' personal':''}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,7"/></svg></div></td>`;
+              tableHtml += `<td style="padding:6px 3px;text-align:center"><div class="archive-slot${val ? ' personal' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,7"/></svg></div></td>`;
             });
             tableHtml += `<td class="session-divider"></td>`;
           });
@@ -1304,16 +1390,16 @@
       const container = document.getElementById('week-tabs');
       const weeks = getWeeks();
       const matchCounts = weeks.map(w => {
-        const m = calcMatchesForWeek(w.key); let c=0;
-        for(let d=0;d<7;d++) for(let s=0;s<3;s++) if(m[d][s]) c++;
+        const m = calcMatchesForWeek(w.key); let c = 0;
+        for (let d = 0; d < 7; d++) for (let s = 0; s < 3; s++) if (m[d][s]) c++;
         return c;
       });
-      container.innerHTML = weeks.map((w,wi) => {
-        const isActive = wi===activeWeekIdx;
-        const badge = matchCounts[wi]>0 ? `<span class="tab-badge">${matchCounts[wi]} trùng</span>` : '';
+      container.innerHTML = weeks.map((w, wi) => {
+        const isActive = wi === activeWeekIdx;
+        const badge = matchCounts[wi] > 0 ? `<span class="tab-badge">${matchCounts[wi]} trùng</span>` : '';
         const dateRange = `${fmtShort(w.dates[0])} – ${fmtShort(w.dates[6])}`;
-        return `<button class="week-tab${isActive?' active':''}" onclick="switchWeek(${wi})">
-          ${wi===0?'<span class="today-marker"></span>':''}${w.label} <span style="opacity:0.6;font-size:9px">${dateRange}</span>${badge}
+        return `<button class="week-tab${isActive ? ' active' : ''}" onclick="switchWeek(${wi})">
+          ${wi === 0 ? '<span class="today-marker"></span>' : ''}${w.label} <span style="opacity:0.6;font-size:9px">${dateRange}</span>${badge}
         </button>`;
       }).join('');
     }
@@ -1327,25 +1413,27 @@
 
     function renderMemberBar() {
       const bar = document.getElementById('member-bar'); bar.innerHTML = '';
-      members.forEach((m,i) => {
+      members.forEach((m, i) => {
         const col = memberColor(i);
         const chip = document.createElement('div');
-        chip.className = 'member-chip'+(m.active?'':' inactive');
+        chip.className = 'member-chip' + (m.active ? '' : ' inactive');
         chip.innerHTML = `
           <div class="member-avatar" style="background:${col}22;color:${col}">${initials(m.name)}</div>
           <span>${m.name}</span>
-          <button class="chip-toggle" onclick="event.stopPropagation();toggleMember(${m.id})">${m.active?'●':'○'}</button>
+          <button class="chip-toggle" onclick="event.stopPropagation();toggleMember(${m.id})">${m.active ? '●' : '○'}</button>
           <button class="chip-delete" onclick="event.stopPropagation();deleteMember(${m.id})">×</button>`;
         bar.appendChild(chip);
       });
     }
 
     function calcMatchesForWeek(weekKey) {
-      const active = members.filter(m=>m.active);
+      const active = members.filter(m => m.active);
       const result = {};
-      for(let d=0;d<7;d++){result[d]={};for(let s=0;s<3;s++){
-        result[d][s] = active.length>1 && active.every(m=>slots[weekKey]?.[m.id]?.[d]?.[s]);
-      }}
+      for (let d = 0; d < 7; d++) {
+        result[d] = {}; for (let s = 0; s < 3; s++) {
+          result[d][s] = active.length > 1 && active.every(m => slots[weekKey]?.[m.id]?.[d]?.[s]);
+        }
+      }
       return result;
     }
 
@@ -1356,32 +1444,32 @@
       const tbody = document.getElementById('table-body');
 
       let headHtml = '<tr><th class="member-name-col">THÀNH VIÊN</th>';
-      DAYS.forEach((d,di) => {
-        const date = weekDates[di]; const isToday = isSameDay(date,today);
-        const past = isPast(date)&&!isToday;
-        const cls = isToday?' today':(past?' past':'');
-        headHtml += `<th colspan="4" class="day-header${cls}">${isToday?'<span class="today-marker"></span>':''}${d}</th>`;
+      DAYS.forEach((d, di) => {
+        const date = weekDates[di]; const isToday = isSameDay(date, today);
+        const past = isPast(date) && !isToday;
+        const cls = isToday ? ' today' : (past ? ' past' : '');
+        headHtml += `<th colspan="4" class="day-header${cls}">${isToday ? '<span class="today-marker"></span>' : ''}${d}</th>`;
       });
       headHtml += '</tr><tr><th></th>';
-      DAYS.forEach((_,di) => headHtml += `<th class="day-date" colspan="3">${fmtShort(weekDates[di])}</th><th></th>`);
+      DAYS.forEach((_, di) => headHtml += `<th class="day-date" colspan="3">${fmtShort(weekDates[di])}</th><th></th>`);
       headHtml += '</tr><tr><th></th>';
       DAYS.forEach(() => { SESSION_SHORT.forEach(s => headHtml += `<th style="font-size:10px;padding-bottom:8px">${s}</th>`); headHtml += '<th></th>'; });
       headHtml += '</tr>';
       thead.innerHTML = headHtml;
 
       const matches = calcMatchesForWeek(weekKey); let bodyHtml = '';
-      members.forEach((m,mi) => {
-        if(!m.active) return;
+      members.forEach((m, mi) => {
+        if (!m.active) return;
         const col = memberColor(mi);
         bodyHtml += `<tr><td class="member-cell"><div class="member-row-name"><div class="member-row-avatar" style="background:${col}22;color:${col}">${initials(m.name)}</div>${m.name}</div></td>`;
-        DAYS.forEach((_,di) => {
-          const date = weekDates[di]; const past = isPast(date)&&!isSameDay(date,today);
-          SESSIONS.forEach((_,si) => {
+        DAYS.forEach((_, di) => {
+          const date = weekDates[di]; const past = isPast(date) && !isSameDay(date, today);
+          SESSIONS.forEach((_, si) => {
             const isPersonal = slots[weekKey]?.[m.id]?.[di]?.[si];
             const isMatch = matches[di][si];
-            const cls = isMatch?'match':(isPersonal?'personal':'');
-            const pastCls = past&&!isPersonal?' past':'';
-            bodyHtml += `<td class="slot-cell${isMatch?' match-col':''}">
+            const cls = isMatch ? 'match' : (isPersonal ? 'personal' : '');
+            const pastCls = past && !isPersonal ? ' past' : '';
+            bodyHtml += `<td class="slot-cell${isMatch ? ' match-col' : ''}">
               <button class="slot-btn ${cls}${pastCls}" onclick="toggleSlot('${weekKey}',${m.id},${di},${si})">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,7"/></svg>
               </button></td>`;
@@ -1398,14 +1486,14 @@
       const area = document.getElementById('match-slots-area');
       const countBadge = document.getElementById('match-count');
       const matchList = [];
-      for(let d=0;d<7;d++) for(let s=0;s<3;s++) if(matches[d][s]) matchList.push({d,s});
+      for (let d = 0; d < 7; d++) for (let s = 0; s < 3; s++) if (matches[d][s]) matchList.push({ d, s });
       countBadge.textContent = matchList.length;
-      if(matchList.length===0){area.innerHTML='<div class="match-empty">Chưa có slot nào trùng. Hãy tick lịch rảnh của anh em!</div>';return;}
-      const activeNames = members.filter(m=>m.active).map(m=>m.name).join(', ');
+      if (matchList.length === 0) { area.innerHTML = '<div class="match-empty">Chưa có slot nào trùng. Hãy tick lịch rảnh của anh em!</div>'; return; }
+      const activeNames = members.filter(m => m.active).map(m => m.name).join(', ');
       let html = '<div class="match-slots">';
-      matchList.forEach(({d,s}) => {
-        const isSel = selectedMatchSlots.some(x=>x.d===d&&x.s===s);
-        html += `<div class="match-slot-card${isSel?' selected':''}" onclick="toggleSelectSlot(${d},${s})">
+      matchList.forEach(({ d, s }) => {
+        const isSel = selectedMatchSlots.some(x => x.d === d && x.s === s);
+        html += `<div class="match-slot-card${isSel ? ' selected' : ''}" onclick="toggleSelectSlot(${d},${s})">
           <div class="match-slot-day">${DAYS[d]} — ${SESSIONS[s]}</div>
           <div class="match-slot-session">${fmtVN(weekDates[d])}</div>
           <div class="match-slot-members">${activeNames}</div></div>`;
@@ -1414,37 +1502,54 @@
     }
 
     function toggleSlot(weekKey, memberId, dayIdx, sesIdx) {
-      if(!slots[weekKey]) slots[weekKey]={};
-      if(!slots[weekKey][memberId]) initSlots(memberId);
+      if (!slots[weekKey]) slots[weekKey] = {};
+      if (!slots[weekKey][memberId]) initSlots(memberId);
       slots[weekKey][memberId][dayIdx][sesIdx] = !slots[weekKey][memberId][dayIdx][sesIdx];
       saveData();
     }
     function toggleMember(id) {
-      const m = members.find(x=>x.id===id);
-      if(m){m.active=!m.active;saveData();}
+      const m = members.find(x => x.id === id);
+      if (m) { m.active = !m.active; saveData(); }
     }
-    function toggleSelectSlot(d,s) {
-      const idx = selectedMatchSlots.findIndex(x=>x.d===d&&x.s===s);
-      if(idx>=0) selectedMatchSlots.splice(idx,1); else selectedMatchSlots.push({d,s});
+    function toggleSelectSlot(d, s) {
+      const idx = selectedMatchSlots.findIndex(x => x.d === d && x.s === s);
+      if (idx >= 0) selectedMatchSlots.splice(idx, 1); else selectedMatchSlots.push({ d, s });
       const weeks = getWeeks();
       renderMatchPanel(calcMatchesForWeek(weeks[activeWeekIdx].key), weeks[activeWeekIdx].dates);
       updateFormSlots();
       const form = document.getElementById('event-form');
       const ph = document.getElementById('form-placeholder');
-      if(selectedMatchSlots.length>0){form.classList.add('show');ph.style.display='none';renderEventMemberCheckboxes();}
-      else{form.classList.remove('show');ph.style.display='block';}
+      if (selectedMatchSlots.length > 0) { form.classList.add('show'); ph.style.display = 'none'; renderEventMemberCheckboxes(); }
+      else { form.classList.remove('show'); ph.style.display = 'block'; }
     }
     function updateFormSlots() {
-      const display = document.getElementById('selected-slots-display'); if(!display) return;
+      const display = document.getElementById('selected-slots-display');
+      const tasks = document.getElementById('slot-tasks-container');
+      if (!display) return;
       const weekDates = getWeeks()[activeWeekIdx].dates;
-      if(selectedMatchSlots.length===0){display.innerHTML='<span style="color:var(--text3);font-size:12px">Chưa chọn slot nào</span>';return;}
-      display.innerHTML = selectedMatchSlots.map(({d,s}) =>
+      if (!selectedMatchSlots.length) {
+        display.innerHTML = '<span style="color:var(--text3);font-size:12px">Chưa chọn slot nào</span>';
+        if (tasks) tasks.innerHTML = '';
+        return;
+      }
+      display.innerHTML = selectedMatchSlots.map(({ d, s }) =>
         `<span class="sel-slot-tag">${DAYS[d]} ${SESSIONS[s]} (${fmtVN(weekDates[d])}) <span class="remove-slot" onclick="toggleSelectSlot(${d},${s})">×</span></span>`
       ).join('');
+      if (tasks) {
+        const saved = {};
+        tasks.querySelectorAll('[data-key]').forEach(el => saved[el.dataset.key] = el.value);
+        tasks.innerHTML = selectedMatchSlots.map(({ d, s }) => {
+          const k = `${d}-${s}`;
+          return `<div style="margin-bottom:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase">${DAYS[d]} ${SESSIONS[s]} — ${fmtVN(weekDates[d])}</div>
+            <input class="form-input" data-key="${k}" value="${saved[k] || ''}" placeholder="Đầu việc chính của buổi này..." style="width:100%">
+          </div>`;
+        }).join('');
+      }
     }
     function renderEventMemberCheckboxes() {
       const wrap = document.getElementById('ev-members');
-      wrap.innerHTML = members.filter(m=>m.active).map(m => {
+      wrap.innerHTML = members.filter(m => m.active).map(m => {
         const col = memberColor(members.indexOf(m));
         return `<label class="member-check checked"><input type="checkbox" checked data-id="${m.id}">
           <div style="width:14px;height:14px;border-radius:50%;background:${col}33;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${col}">${initials(m.name)}</div>
@@ -1455,44 +1560,46 @@
       const title = document.getElementById('ev-title').value.trim();
       const startTime = document.getElementById('ev-start').value;
       const endTime = document.getElementById('ev-end').value;
-      const desc = document.getElementById('ev-desc').value.trim();
-      if(!title){showToast('Thiếu thông tin','Hãy nhập tên buổi quay nhé!',false);return;}
-      const checkedIds = [...document.querySelectorAll('#ev-members input:checked')].map(cb=>parseInt(cb.dataset.id));
-      const checkedMembers = members.filter(m=>checkedIds.includes(m.id));
-      const names = checkedMembers.map(m=>m.name).join(', ');
-      const emails = checkedMembers.map(m=>m.email).filter(Boolean);
+      const location = document.getElementById('ev-location')?.value.trim() || '';
+      const meeting = document.getElementById('ev-meeting')?.value.trim() || '';
+      if (!title) { showToast('Thiếu thông tin', 'Nhập tên buổi trước nhé!', false); return; }
+      const emails = [...document.querySelectorAll('#ev-members input:checked')]
+        .map(cb => members.find(m => m.id === parseInt(cb.dataset.id))?.email).filter(Boolean);
       const weekDates = getWeeks()[activeWeekIdx].dates;
-      selectedMatchSlots.forEach(({d,s},i) => {
-        const date = weekDates[d];
-        const dateStr = date.toISOString().slice(0,10).replace(/-/g,'');
-        const [sh,sm] = startTime.split(':'); const [eh,em] = endTime.split(':');
-        const startDt=`${dateStr}T${sh}${sm}00`; const endDt=`${dateStr}T${eh}${em}00`;
-        const detailText=[desc,`Thành viên: ${names}`,emails.length?`Email: ${emails.join(', ')}`:''].filter(Boolean).join('\n\n');
-        let url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDt}/${endDt}&details=${encodeURIComponent(detailText)}`;
-        if(emails.length) url+=`&add=${encodeURIComponent(emails.join(','))}`;
-        setTimeout(()=>window.open(url,'_blank'),i*500);
+      selectedMatchSlots.forEach(({ d, s }, i) => {
+        const ds = weekDates[d].toISOString().slice(0, 10).replace(/-/g, '');
+        const [sh, sm] = startTime.split(':'), [eh, em] = endTime.split(':');
+        const task = document.querySelector(`#slot-tasks-container [data-key="${d}-${s}"]`)?.value.trim() || '';
+        const parts = [];
+        if (task) parts.push(`📝 ${task}`);
+        if (meeting) parts.push(`🔗 ${meeting}`);
+        let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${ds}T${sh}${sm}00/${ds}T${eh}${em}00&details=${encodeURIComponent(parts.join('\n\n'))}`;
+        if (location) url += `&location=${encodeURIComponent(location)}`;
+        if (emails.length) url += `&add=${encodeURIComponent(emails.join(','))}`;
+        setTimeout(() => window.open(url, '_blank'), i * 600);
       });
-      showToast('Đã mở lịch','Hãy nhấn Lưu trên Google Calendar',true);
+      showToast('Đang mở lịch...', `${selectedMatchSlots.length} tab đang được mở. Nhấn Lưu ở từng tab nhé!`, true);
     }
+
     function deleteMember(id) {
-      const m = members.find(x=>x.id===id);
-      if(m&&confirm(`Xoá "${m.name}" khỏi nhóm?`)){members=members.filter(x=>x.id!==id);saveData();}
+      const m = members.find(x => x.id === id);
+      if (m && confirm(`Xoá "${m.name}" khỏi nhóm?`)) { members = members.filter(x => x.id !== id); saveData(); }
     }
-    function openAddMember(){document.getElementById('modal-overlay').classList.add('show');setTimeout(()=>document.getElementById('modal-input').focus(),100);}
-    function closeModal(){document.getElementById('modal-overlay').classList.remove('show');document.getElementById('modal-input').value='';document.getElementById('modal-email').value='';}
-    function confirmAddMember(){
-      const name=document.getElementById('modal-input').value.trim();
-      const email=document.getElementById('modal-email').value.trim();
-      if(!name) return;
-      const newMember={id:nextId++,name,email,active:true};
+    function openAddMember() { document.getElementById('modal-overlay').classList.add('show'); setTimeout(() => document.getElementById('modal-input').focus(), 100); }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); document.getElementById('modal-input').value = ''; document.getElementById('modal-email').value = ''; }
+    function confirmAddMember() {
+      const name = document.getElementById('modal-input').value.trim();
+      const email = document.getElementById('modal-email').value.trim();
+      if (!name) return;
+      const newMember = { id: nextId++, name, email, active: true };
       members.push(newMember); initSlots(newMember.id); saveData(); closeModal();
     }
     function showToast(title, msg, ok) {
-      const t=document.getElementById('toast');
-      document.getElementById('toast-title').textContent=title;
-      document.getElementById('toast-msg').textContent=msg;
-      t.style.borderColor=ok?'var(--accent)':'#ff6b6b';
-      t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),4000);
+      const t = document.getElementById('toast');
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-msg').textContent = msg;
+      t.style.borderColor = ok ? 'var(--accent)' : '#ff6b6b';
+      t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4000);
     }
 
     // ── EXPOSE TO WINDOW ──
