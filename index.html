@@ -1574,7 +1574,7 @@
         .map(cb => members.find(m => m.id === parseInt(cb.dataset.id))?.email).filter(Boolean);
       const weekDates = getWeeks()[activeWeekIdx].dates;
       selectedMatchSlots.forEach(({ d, s }, i) => {
-        const ds = weekDates[d].toISOString().slice(0, 10).replace(/-/g, '');
+        const ds = toLocalISO(weekDates[d]).replace(/-/g, '');
         const [sh, sm] = startTime.split(':'), [eh, em] = endTime.split(':');
         const task = document.querySelector(`#slot-tasks-container [data-key="${d}-${s}"]`)?.value.trim() || '';
         const parts = [];
