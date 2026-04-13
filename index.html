@@ -1066,23 +1066,11 @@
       <div class="form-grid">
         <div class="form-group full">
           <label class="form-label">Tên buổi *</label>
-          <input class="form-input" id="ev-title" placeholder="VD: Quay MV Lãnh Đạo..." />
+          <input class="form-input" id="ev-title" placeholder="VD: Quay MV Lãnh đạo..." />
         </div>
         <div class="form-group full">
           <label class="form-label">Slot đã chọn</label>
           <div class="selected-slots" id="selected-slots-display"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Giờ bắt đầu</label>
-          <input class="form-input" id="ev-start" type="time" value="09:00" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Giờ kết thúc</label>
-          <input class="form-input" id="ev-end" type="time" value="12:00" />
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Địa điểm (Google Maps)</label>
-          <input class="form-input" id="ev-location" placeholder="VD: 281 Nguyễn Văn Tăng, Long Bình, TP.HCM" />
         </div>
         <div class="form-group">
           <label class="form-label">Link họp online (nếu có)</label>
@@ -1098,7 +1086,7 @@
           </select>
         </div>
         <div class="form-group full">
-          <label class="form-label">Đầu việc cho từng buổi</label>
+          <label class="form-label">↓ Tùy chỉnh từng buổi (giờ + địa điểm + đầu việc)</label>
           <div id="slot-tasks-container"></div>
         </div>
         <div class="form-group full">
@@ -1529,6 +1517,9 @@
       if (selectedMatchSlots.length > 0) { form.classList.add('show'); ph.style.display = 'none'; renderEventMemberCheckboxes(); }
       else { form.classList.remove('show'); ph.style.display = 'block'; }
     }
+    // Giờ mặc định theo buổi
+    const SESSION_TIMES = [ ['09:00','11:00'], ['14:00','17:00'], ['19:00','22:00'] ];
+
     function updateFormSlots() {
       const display = document.getElementById('selected-slots-display');
       const tasks = document.getElementById('slot-tasks-container');
@@ -1544,13 +1535,39 @@
       ).join('');
       if (tasks) {
         const saved = {};
-        tasks.querySelectorAll('[data-key]').forEach(el => saved[el.dataset.key] = el.value);
+        tasks.querySelectorAll('[data-key]').forEach(el => saved[`${el.dataset.key}__${el.dataset.field}`] = el.value);
         tasks.innerHTML = selectedMatchSlots.map(({ d, s }) => {
           const k = `${d}-${s}`;
-          return `<div style="margin-bottom:8px">
-            <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;text-transform:uppercase">${DAYS[d]} ${SESSIONS[s]} — ${fmtVN(weekDates[d])}</div>
-            <input class="form-input" data-key="${k}" value="${saved[k] || ''}" placeholder="Đầu việc chính của buổi này..." style="width:100%">
-          </div>`;
+          const [defStart, defEnd] = SESSION_TIMES[s];
+          const start = saved[`${k}__start`] ?? defStart;
+          const end   = saved[`${k}__end`]   ?? defEnd;
+          const loc   = saved[`${k}__loc`]   ?? '';
+          const task  = saved[`${k}__task`]  ?? '';
+          return `
+            <div style="margin-bottom:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase">
+                ${DAYS[d]} — ${SESSIONS[s].toUpperCase()} &nbsp;|&nbsp; ${fmtVN(weekDates[d])}
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỚ BẮT ĐẦU</div>
+                  <input class="form-input" type="time" data-key="${k}" data-field="start" value="${start}">
+                </div>
+                <div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỚ KẾT THÚC</div>
+                  <input class="form-input" type="time" data-key="${k}" data-field="end" value="${end}">
+                </div>
+              </div>
+              <div style="margin-bottom:8px">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ĐỊ ĐIỂM (GOOGLE MAPS)</div>
+                <input class="form-input" data-key="${k}" data-field="loc" value="${loc}" placeholder="VD: Studio, 281 Nguyễn Văn Tăng...">
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ĐẦU VIỆC CHÍNH</div>
+                <input class="form-input" data-key="${k}" data-field="task" value="${task}" placeholder="Nội dung buổi này...">
+              </div>
+            </div>
+          `;
         }).join('');
       }
     }
@@ -1565,18 +1582,22 @@
     }
     function sendToCalendar() {
       const title = document.getElementById('ev-title').value.trim();
-      const startTime = document.getElementById('ev-start').value;
-      const endTime = document.getElementById('ev-end').value;
-      const location = document.getElementById('ev-location')?.value.trim() || '';
       const meeting = document.getElementById('ev-meeting')?.value.trim() || '';
       if (!title) { showToast('Thiếu thông tin', 'Nhập tên buổi trước nhé!', false); return; }
       const emails = [...document.querySelectorAll('#ev-members input:checked')]
         .map(cb => members.find(m => m.id === parseInt(cb.dataset.id))?.email).filter(Boolean);
       const weekDates = getWeeks()[activeWeekIdx].dates;
+      const getField = (k, field) =>
+        document.querySelector(`#slot-tasks-container [data-key="${k}"][data-field="${field}"]`)?.value.trim() || '';
       selectedMatchSlots.forEach(({ d, s }, i) => {
+        const k = `${d}-${s}`;
+        const [defStart, defEnd] = SESSION_TIMES[s];
+        const startTime = getField(k, 'start') || defStart;
+        const endTime   = getField(k, 'end')   || defEnd;
+        const location  = getField(k, 'loc');
+        const task      = getField(k, 'task');
         const ds = toLocalISO(weekDates[d]).replace(/-/g, '');
         const [sh, sm] = startTime.split(':'), [eh, em] = endTime.split(':');
-        const task = document.querySelector(`#slot-tasks-container [data-key="${d}-${s}"]`)?.value.trim() || '';
         const parts = [];
         if (task) parts.push(`📝 ${task}`);
         if (meeting) parts.push(`🔗 ${meeting}`);
