@@ -1590,20 +1590,18 @@
 
     function addGroup() {
       groups.push({ name: '', slots: [] });
-      renderGroups();
+      updateFormSlots();
       const inputs = document.querySelectorAll('.group-name-input');
       if (inputs.length) inputs[inputs.length-1].focus();
     }
     function removeGroup(gi) {
       groups.splice(gi, 1);
-      renderGroups();
       updateFormSlots();
     }
     function toggleGroupSlot(gi, k) {
       const g = groups[gi];
       const idx = g.slots.indexOf(k);
       if (idx === -1) g.slots.push(k); else g.slots.splice(idx, 1);
-      renderGroups();
       updateFormSlots();
     }
     function renderGroups() {
@@ -1672,8 +1670,6 @@
       display.innerHTML = selectedMatchSlots.map(({ d, s }) =>
         `<span class="sel-slot-tag">${DAYS[d]} ${SESSIONS[s]} (${fmtVN(weekDates[d])}) <span class="remove-slot" onclick="toggleSelectSlot(${d},${s})">×</span></span>`
       ).join('');
-      
-      renderGroups();
 
       if (tasks) {
         // Lưu lại giá trị input text hiện tại trước khi render lại
@@ -1695,6 +1691,7 @@
           const meetMode = st.meetMode || 'none';
           const meetLink = st.meetLink || '';
           const selColor = st.color || '';
+          const groupName = getSlotGroup(k);
 
           // ── 11 hình tròn màu ──
           const colorDots = GG_COLORS.map(c => {
@@ -1727,8 +1724,11 @@
             <div style="margin-bottom:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
 
               <!-- Header slot -->
-              <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase">
-                ${DAYS[d]} — ${SESSIONS[s].toUpperCase()} &nbsp;|&nbsp; ${fmtVN(weekDates[d])}
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase">
+                  ${DAYS[d]} — ${SESSIONS[s].toUpperCase()} &nbsp;|&nbsp; ${fmtVN(weekDates[d])}
+                </div>
+                ${groupName ? `<span style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:10px;background:var(--accent);color:#000;">${groupName}</span>` : ''}
               </div>
 
               <!-- Giờ -->
@@ -1794,6 +1794,8 @@
           `;
         }).join('');
       }
+      // Gọi renderGroups SAU KHI tasks đã render xong để groups UI luôn đồng bộ
+      renderGroups();
     }
     function renderEventMemberCheckboxes() {
       const wrap = document.getElementById('ev-members');
