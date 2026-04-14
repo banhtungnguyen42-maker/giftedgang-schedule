@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIFTEDGANG SCHEDULE</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -1095,7 +1096,14 @@
         </div>
       </div>
       <div class="send-wrap">
-        <button class="send-btn" onclick="sendToCalendar()">
+        <div id="google-auth-container" style="margin-bottom:12px;width:100%;display:flex;gap:10px;align-items:center;">
+          <button class="add-member-btn" id="connect-google-btn" onclick="handleAuthClick()" style="padding:10px 16px;background:#fff;color:#444;border:1px solid #ddd;font-weight:600;">
+            <img src="https://www.google.com/favicon.ico" style="width:16px;margin-right:8px;vertical-align:middle;">
+            Kết nối Google Calendar
+          </button>
+          <span id="google-status" style="font-size:12px;color:var(--text3);">Chưa kết nối</span>
+        </div>
+        <button class="send-btn" id="sync-btn" onclick="sendToCalendar()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
@@ -1167,6 +1175,11 @@
     const archiveRef = ref(db, 'giftedgang/archive');
 
     // ── CONSTANTS ──
+    const CLIENT_ID = '527384464151-tkfkj55bi5iqprsl4nevq6cap74m4rgl.apps.googleusercontent.com';
+    const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+    let tokenClient;
+    let accessToken = null;
+
     const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
     const SESSIONS = ['Sáng', 'Chiều', 'Tối'];
     const SESSION_SHORT = ['S', 'C', 'T'];
@@ -1223,6 +1236,32 @@
     }
     function isSameDay(a, b) { return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear(); }
     function isPast(d) { return d < today; }
+
+    // ── GOOGLE AUTH ──
+    function initTokenClient() {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+          if (response.error !== undefined) throw (response);
+          accessToken = response.access_token;
+          document.getElementById('google-status').textContent = '✅ Đã kết nối';
+          document.getElementById('google-status').style.color = '#34d399';
+          document.getElementById('sync-btn').textContent = 'Đồng bộ tự động ngay (Auto Sync)';
+          showToast('Thành công', 'Đã kết nối Google Calendar!', true);
+        },
+      });
+    }
+
+    function handleAuthClick() {
+      if (accessToken === null) {
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+      } else {
+        tokenClient.requestAccessToken({ prompt: '' });
+      }
+    }
+
+    // Tự động gọi init khi script load xong (ở cuối script section)
     const memberColor = (i) => COLORS[i % COLORS.length];
     const initials = (n) => n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
@@ -1580,33 +1619,90 @@
           ${m.name}</label>`;
       }).join('');
     }
-    function sendToCalendar() {
+    async function sendToCalendar() {
       const title = document.getElementById('ev-title').value.trim();
       const meeting = document.getElementById('ev-meeting')?.value.trim() || '';
       if (!title) { showToast('Thiếu thông tin', 'Nhập tên buổi trước nhé!', false); return; }
-      const emails = [...document.querySelectorAll('#ev-members input:checked')]
+      
+      const emailsArray = [...document.querySelectorAll('#ev-members input:checked')]
         .map(cb => members.find(m => m.id === parseInt(cb.dataset.id))?.email).filter(Boolean);
+      const calendarAttendees = emailsArray.map(email => ({ email }));
+
       const weekDates = getWeeks()[activeWeekIdx].dates;
       const getField = (k, field) =>
         document.querySelector(`#slot-tasks-container [data-key="${k}"][data-field="${field}"]`)?.value.trim() || '';
-      selectedMatchSlots.forEach(({ d, s }, i) => {
+
+      if (accessToken === null) {
+        // Fallback về cách cũ (mở tab) nếu chưa kết nối API
+        selectedMatchSlots.forEach(({ d, s }, i) => {
+          const k = `${d}-${s}`;
+          const [defStart, defEnd] = SESSION_TIMES[s];
+          const startTime = getField(k, 'start') || defStart;
+          const endTime   = getField(k, 'end')   || defEnd;
+          const location  = getField(k, 'loc');
+          const task      = getField(k, 'task');
+          const ds = toLocalISO(weekDates[d]).replace(/-/g, '');
+          const [sh, sm] = startTime.split(':'), [eh, em] = endTime.split(':');
+          const parts = [];
+          if (task) parts.push(`📝 ${task}`);
+          if (meeting) parts.push(`🔗 ${meeting}`);
+          let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${ds}T${sh}${sm}00/${ds}T${eh}${em}00&details=${encodeURIComponent(parts.join('\n\n'))}`;
+          if (location) url += `&location=${encodeURIComponent(location)}`;
+          if (emailsArray.length) url += `&add=${encodeURIComponent(emailsArray.join(','))}`;
+          setTimeout(() => window.open(url, '_blank'), i * 600);
+        });
+        showToast('Đang mở tab...', 'Hãy nhấn Lưu ở từng tab. (Hoặc bấm "Kết nối Google" để tự động hoàn toàn)', true);
+        return;
+      }
+
+      // NẾU CÓ ACCESS TOKEN -> DÙNG API TỰ ĐỘNG
+      showToast('Đang xử lý...', `Đang đồng bộ ${selectedMatchSlots.length} buổi lên Google Calendar...`, true);
+      
+      let successCount = 0;
+      for (const {d, s} of selectedMatchSlots) {
         const k = `${d}-${s}`;
         const [defStart, defEnd] = SESSION_TIMES[s];
         const startTime = getField(k, 'start') || defStart;
         const endTime   = getField(k, 'end')   || defEnd;
         const location  = getField(k, 'loc');
         const task      = getField(k, 'task');
-        const ds = toLocalISO(weekDates[d]).replace(/-/g, '');
-        const [sh, sm] = startTime.split(':'), [eh, em] = endTime.split(':');
-        const parts = [];
-        if (task) parts.push(`📝 ${task}`);
-        if (meeting) parts.push(`🔗 ${meeting}`);
-        let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${ds}T${sh}${sm}00/${ds}T${eh}${em}00&details=${encodeURIComponent(parts.join('\n\n'))}`;
-        if (location) url += `&location=${encodeURIComponent(location)}`;
-        if (emails.length) url += `&add=${encodeURIComponent(emails.join(','))}`;
-        setTimeout(() => window.open(url, '_blank'), i * 600);
-      });
-      showToast('Đang mở lịch...', `${selectedMatchSlots.length} tab đang được mở. Nhấn Lưu ở từng tab nhé!`, true);
+        
+        const dateStr = toLocalISO(weekDates[d]); // YYYY-MM-DD
+        const eventData = {
+          'summary': title,
+          'location': location,
+          'description': [task ? `📝 Nội dung: ${task}` : '', meeting ? `🔗 Link họp: ${meeting}` : ''].filter(Boolean).join('\n\n'),
+          'start': { 'dateTime': `${dateStr}T${startTime}:00`, 'timeZone': 'Asia/Ho_Chi_Minh' },
+          'end': { 'dateTime': `${dateStr}T${endTime}:00`, 'timeZone': 'Asia/Ho_Chi_Minh' },
+          'attendees': calendarAttendees,
+          'reminders': {
+            'useDefault': false,
+            'overrides': [
+              {'method': 'popup', 'minutes': parseInt(document.getElementById('ev-reminder').value)}
+            ]
+          }
+        };
+
+        try {
+          const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eventData)
+          });
+          if (response.ok) successCount++;
+        } catch (err) {
+          console.error('Lỗi khi tạo event:', err);
+        }
+      }
+
+      if (successCount === selectedMatchSlots.length) {
+        showToast('Hoàn thành!', `Đã đồng bộ thành công ${successCount} buổi vào lịch của bạn.`, true);
+      } else {
+        showToast('Có lỗi xảy ra', `Chỉ đồng bộ được ${successCount}/${selectedMatchSlots.length} buổi.`, false);
+      }
     }
 
     function deleteMember(id) {
@@ -1640,6 +1736,12 @@
     window.closeModal = closeModal;
     window.confirmAddMember = confirmAddMember;
     window.sendToCalendar = sendToCalendar;
+    window.handleAuthClick = handleAuthClick;
+
+    // Khởi tạo Token Client khi Script của Google sẵn sàng
+    window.onload = () => {
+      if (window.google) initTokenClient();
+    };
     window.cancelForm = () => {
       selectedMatchSlots = [];
       document.getElementById('event-form').classList.remove('show');
