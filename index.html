@@ -1597,12 +1597,14 @@
     function removeGroup(gi) {
       groups.splice(gi, 1);
       renderGroups();
+      updateFormSlots();
     }
     function toggleGroupSlot(gi, k) {
       const g = groups[gi];
       const idx = g.slots.indexOf(k);
       if (idx === -1) g.slots.push(k); else g.slots.splice(idx, 1);
       renderGroups();
+      updateFormSlots();
     }
     function renderGroups() {
       const c = document.getElementById('groups-container');
