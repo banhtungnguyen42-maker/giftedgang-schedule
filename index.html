@@ -1542,7 +1542,18 @@
     }
     function toggleSelectSlot(d, s) {
       const idx = selectedMatchSlots.findIndex(x => x.d === d && x.s === s);
-      if (idx >= 0) selectedMatchSlots.splice(idx, 1); else selectedMatchSlots.push({ d, s });
+      const k = `${d}-${s}`;
+      if (idx >= 0) {
+        selectedMatchSlots.splice(idx, 1);
+        if (typeof groups !== 'undefined') {
+          groups.forEach(g => {
+            const gi = g.slots.indexOf(k);
+            if (gi !== -1) g.slots.splice(gi, 1);
+          });
+        }
+      } else {
+        selectedMatchSlots.push({ d, s });
+      }
       const weeks = getWeeks();
       renderMatchPanel(calcMatchesForWeek(weeks[activeWeekIdx].key), weeks[activeWeekIdx].dates);
       updateFormSlots();
@@ -1653,11 +1664,15 @@
       if (!selectedMatchSlots.length) {
         display.innerHTML = '<span style="color:var(--text3);font-size:12px">Chưa chọn slot nào</span>';
         if (tasks) tasks.innerHTML = '';
+        renderGroups();
         return;
       }
       display.innerHTML = selectedMatchSlots.map(({ d, s }) =>
         `<span class="sel-slot-tag">${DAYS[d]} ${SESSIONS[s]} (${fmtVN(weekDates[d])}) <span class="remove-slot" onclick="toggleSelectSlot(${d},${s})">×</span></span>`
       ).join('');
+      
+      renderGroups();
+
       if (tasks) {
         // Lưu lại giá trị input text hiện tại trước khi render lại
         tasks.querySelectorAll('[data-key][data-field]').forEach(el => {
