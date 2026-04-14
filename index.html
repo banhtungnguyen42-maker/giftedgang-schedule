@@ -1066,23 +1066,26 @@
       <div class="form-title">Chi tiết buổi hẹn</div>
       <div class="form-grid">
         <div class="form-group full">
-          <label class="form-label">① Tên chung (dùng khi slot không có chủ đề)</label>
-          <input class="form-input" id="ev-title" placeholder="VD: GiftedGang Session..." />
+          <label class="form-label">Tên buổi</label>
+          <input class="form-input" id="ev-title" placeholder="VD: Quay MV Lãnh đạo..." />
+        </div>
+        <div class="form-group full" id="groups-section">
+          <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+            Nhóm riêng (téch theo chủ đề)
+            <button onclick="addGroup()" style="padding:3px 10px;font-size:10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;">+ Tách nhóm</button>
+          </label>
+          <div id="groups-container" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
         </div>
         <div class="form-group full">
-          <label class="form-label">② Chủ đề (gom nhóm buổi) <button onclick="addTopic()" style="margin-left:8px;padding:2px 8px;font-size:10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;">+ Thêm chủ đề</button></label>
-          <div id="topics-container" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">③ Slot đã chọn</label>
+          <label class="form-label">Slot đã chọn</label>
           <div class="selected-slots" id="selected-slots-display"></div>
         </div>
         <div class="form-group full">
-          <label class="form-label">④ Tuỳ chỉnh từng buổi</label>
+          <label class="form-label">Tuỳ chỉnh từng buổi</label>
           <div id="slot-tasks-container"></div>
         </div>
         <div class="form-group full">
-          <label class="form-label">⑤ Gửi cho thành viên</label>
+          <label class="form-label">Gửi cho thành viên</label>
           <div class="member-checkboxes" id="ev-members"></div>
         </div>
       </div>
@@ -1571,31 +1574,76 @@
       slotState[k][field] = val;
     }
 
-    // ── TOPICS ──
-    function addTopic() {
-      topics.push({ name: '' });
-      renderTopics();
-      const inputs = document.querySelectorAll('.topic-name-input');
-      if (inputs.length) inputs[inputs.length - 1].focus();
+    // ── GROUPS (Tách nhóm theo chủ đề) ──
+    let groups = []; // [{name:'', slots:['0-1','0-2']}]
+
+    function addGroup() {
+      groups.push({ name: '', slots: [] });
+      renderGroups();
+      const inputs = document.querySelectorAll('.group-name-input');
+      if (inputs.length) inputs[inputs.length-1].focus();
     }
-    function removeTopic(i) {
-      // reset slots that had this topic
-      const name = topics[i].name;
-      Object.values(slotState).forEach(st => { if (st.topic === name) st.topic = ''; });
-      topics.splice(i, 1);
-      renderTopics();
-      updateFormSlots();
+    function removeGroup(gi) {
+      groups.splice(gi, 1);
+      renderGroups();
     }
-    function renderTopics() {
-      const c = document.getElementById('topics-container');
+    function toggleGroupSlot(gi, k) {
+      const g = groups[gi];
+      const idx = g.slots.indexOf(k);
+      if (idx === -1) g.slots.push(k); else g.slots.splice(idx, 1);
+      renderGroups();
+    }
+    function renderGroups() {
+      const c = document.getElementById('groups-container');
       if (!c) return;
-      if (!topics.length) { c.innerHTML = '<span style="font-size:11px;color:var(--text3);">Chưa có chủ đề nào</span>'; return; }
-      c.innerHTML = topics.map((t, i) => `
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input class="form-input topic-name-input" value="${t.name}" placeholder="Tên chủ đề (VD: CONTENT LÃNH ĐẠO)" oninput="topics[${i}].name=this.value;updateFormSlots()" style="flex:1;padding:6px 10px;font-size:12px;">
-          <button onclick="removeTopic(${i})" style="padding:4px 8px;border-radius:6px;border:1px solid #ff6b6b;color:#ff6b6b;background:transparent;cursor:pointer;font-size:12px;">×</button>
-        </div>`).join('');
+      if (!groups.length) { c.innerHTML = ''; return; }
+      const weekDates = getWeeks()[activeWeekIdx].dates;
+      c.innerHTML = groups.map((g, gi) => {
+        const slotTags = selectedMatchSlots.map(({d,s}) => {
+          const k = `${d}-${s}`;
+          const active = g.slots.includes(k);
+          return `<span onclick="toggleGroupSlot(${gi},'${k}')" style="cursor:pointer;display:inline-block;padding:3px 8px;margin:2px;border-radius:10px;font-size:10px;font-weight:600;border:1px solid ${active?'var(--accent)':'var(--border)'};background:${active?'var(--accent)':'transparent'};color:${active?'#000':'var(--text2)'}">${DAYS[d]} ${SESSIONS[s]}</span>`;
+        }).join('');
+        return `<div style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+            <input class="form-input group-name-input" value="${g.name}" placeholder="Tên nhóm (VD: CONTENT LÃNH ĐẠO)" oninput="groups[${gi}].name=this.value" style="flex:1;padding:6px 10px;font-size:12px;">
+            <button onclick="removeGroup(${gi})" style="padding:4px 8px;border-radius:6px;border:1px solid #ff6b6b;color:#ff6b6b;background:transparent;cursor:pointer;font-size:12px;">×</button>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Chọn buổi thuộc nhóm này:</div>
+          <div>${slotTags || '<span style="font-size:11px;color:var(--text3);">Chưa có slot nào được chọn</span>'}</div>
+        </div>`;
+      }).join('');
     }
+
+    function getSlotGroup(k) {
+      const g = groups.find(g => g.slots.includes(k));
+      return g ? g.name : '';
+    }
+
+    // 11 màu chuẩn của Google Calendar
+    const GG_COLORS = [
+      { id: '1',  hex: '#7986cb', name: 'Lavender' },
+      { id: '2',  hex: '#33b679', name: 'Sage' },
+      { id: '3',  hex: '#8e24aa', name: 'Grape' },
+      { id: '4',  hex: '#e67c73', name: 'Flamingo' },
+      { id: '5',  hex: '#f6c026', name: 'Banana' },
+      { id: '6',  hex: '#f5511d', name: 'Tangerine' },
+      { id: '7',  hex: '#039be5', name: 'Peacock' },
+      { id: '8',  hex: '#616161', name: 'Graphite' },
+      { id: '9',  hex: '#3f51b5', name: 'Blueberry' },
+      { id: '10', hex: '#0b8043', name: 'Basil' },
+      { id: '11', hex: '#d60000', name: 'Tomato' },
+    ];
+
+    function setSlotColor(k, colorId) {
+      saveSlotState(k, 'color', colorId);
+      // Cập nhật lại ring chọn trong DOM mà không render lại cả form
+      document.querySelectorAll(`.color-dot[data-key="${k}"]`).forEach(dot => {
+        dot.style.outline = dot.dataset.colorid === colorId ? '2px solid #fff' : 'none';
+        dot.style.outlineOffset = '2px';
+      });
+    }
+    window.setSlotColor = setSlotColor;
 
     function updateFormSlots() {
       const display = document.getElementById('selected-slots-display');
@@ -1611,38 +1659,120 @@
         `<span class="sel-slot-tag">${DAYS[d]} ${SESSIONS[s]} (${fmtVN(weekDates[d])}) <span class="remove-slot" onclick="toggleSelectSlot(${d},${s})">×</span></span>`
       ).join('');
       if (tasks) {
-        const saved = {};
-        tasks.querySelectorAll('[data-key]').forEach(el => saved[`${el.dataset.key}__${el.dataset.field}`] = el.value);
+        // Lưu lại giá trị input text hiện tại trước khi render lại
+        tasks.querySelectorAll('[data-key][data-field]').forEach(el => {
+          const k = el.dataset.key, f = el.dataset.field;
+          if (!slotState[k]) getSlotState(k);
+          const map = { start:'start', end:'end', loc:'loc', task:'task', meetlink:'meetLink' };
+          if (map[f]) slotState[k][map[f]] = el.value;
+        });
+
         tasks.innerHTML = selectedMatchSlots.map(({ d, s }) => {
           const k = `${d}-${s}`;
+          const st = getSlotState(k);
           const [defStart, defEnd] = SESSION_TIMES[s];
-          const start = saved[`${k}__start`] ?? defStart;
-          const end = saved[`${k}__end`] ?? defEnd;
-          const loc = saved[`${k}__loc`] ?? '';
-          const task = saved[`${k}__task`] ?? '';
+          const start = st.start || defStart;
+          const end   = st.end   || defEnd;
+          const loc   = st.loc   || '';
+          const task  = st.task  || '';
+          const meetMode = st.meetMode || 'none';
+          const meetLink = st.meetLink || '';
+          const selColor = st.color || '';
+
+          // ── 11 hình tròn màu ──
+          const colorDots = GG_COLORS.map(c => {
+            const active = selColor === c.id;
+            return `<span class="color-dot" data-key="${k}" data-colorid="${c.id}"
+              title="${c.name}"
+              onclick="setSlotColor('${k}','${active ? '' : c.id}')"
+              style="display:inline-block;width:18px;height:18px;border-radius:50%;background:${c.hex};cursor:pointer;
+                     outline:${active ? '2px solid #fff' : 'none'};outline-offset:2px;flex-shrink:0;"></span>`;
+          }).join('');
+
+          // ── Nút Meet ──
+          const meetBtn = (mode, label) => {
+            const on = meetMode === mode;
+            return `<button onclick="saveMeetMode('${k}','${on ? 'none' : mode}')"
+              style="padding:4px 10px;font-size:10px;font-weight:600;border-radius:6px;cursor:pointer;
+                     border:1px solid ${on ? 'var(--accent)' : 'var(--border2)'};
+                     background:${on ? 'var(--accent)' : 'transparent'};
+                     color:${on ? '#000' : 'var(--text2)'}">${label}</button>`;
+          };
+
+          // ── Danh sách reminders ──
+          const reminderChips = (st.reminders || [30]).map((m, ri) => `
+            <span style="display:inline-flex;align-items:center;gap:4px;background:var(--border);border-radius:12px;padding:2px 8px;margin:2px;font-size:11px;">
+              ${m < 60 ? m + ' phút' : (m / 60) + ' tiếng'}
+              <span onclick="removeReminder('${k}',${ri})" style="cursor:pointer;color:#ff6b6b;font-size:13px;">&times;</span>
+            </span>`).join('');
+
           return `
             <div style="margin-bottom:12px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+
+              <!-- Header slot -->
               <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase">
                 ${DAYS[d]} — ${SESSIONS[s].toUpperCase()} &nbsp;|&nbsp; ${fmtVN(weekDates[d])}
               </div>
+
+              <!-- Giờ -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
                 <div>
-                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỚ BẮT ĐẦU</div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỜ BẮT ĐẦU</div>
                   <input class="form-input" type="time" data-key="${k}" data-field="start" value="${start}">
                 </div>
                 <div>
-                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỚ KẾT THÚC</div>
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:3px">GIỜ KẾT THÚC</div>
                   <input class="form-input" type="time" data-key="${k}" data-field="end" value="${end}">
                 </div>
               </div>
+
+              <!-- Địa điểm -->
               <div style="margin-bottom:8px">
-                <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ĐỊ ĐIỂM (GOOGLE MAPS)</div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ĐỊA ĐIỂM</div>
                 <input class="form-input" data-key="${k}" data-field="loc" value="${loc}" placeholder="VD: Studio, 281 Nguyễn Văn Tăng...">
               </div>
-              <div>
+
+              <!-- Đầu việc -->
+              <div style="margin-bottom:10px">
                 <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ĐẦU VIỆC CHÍNH</div>
                 <input class="form-input" data-key="${k}" data-field="task" value="${task}" placeholder="Nội dung buổi này...">
               </div>
+
+              <!-- Google Meet -->
+              <div style="margin-bottom:10px">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:5px">GOOGLE MEET</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                  ${meetBtn('none',  '🚫 Không có')}
+                  ${meetBtn('auto',  '⚡ Tự động')}
+                  ${meetBtn('manual','🔗 Dán link')}
+                </div>
+                ${meetMode === 'manual' ? `<input class="form-input" data-key="${k}" data-field="meetlink" value="${meetLink}" placeholder="https://meet.google.com/..." style="margin-top:4px">` : ''}
+              </div>
+
+              <!-- Màu sắc -->
+              <div style="margin-bottom:10px">
+                <div style="font-size:10px;color:var(--text3);margin-bottom:5px">MÀU SẮC LỊCH</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                  <!-- Nút xóa màu -->
+                  <span onclick="setSlotColor('${k}','')" title="Mặc định"
+                    style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--border2);cursor:pointer;font-size:10px;color:var(--text3);${selColor===''?'outline:2px solid #fff;outline-offset:2px;':''}">✕</span>
+                  ${colorDots}
+                </div>
+              </div>
+
+              <!-- Thông báo -->
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:5px">THÔNG BÁO TRƯỚC</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                  <button onclick="addReminder('${k}',15)"  style="padding:3px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer">+15 phút</button>
+                  <button onclick="addReminder('${k}',30)"  style="padding:3px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer">+30 phút</button>
+                  <button onclick="addReminder('${k}',60)"  style="padding:3px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer">+1 tiếng</button>
+                  <button onclick="addReminder('${k}',720)" style="padding:3px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer">+12 tiếng</button>
+                  <button onclick="addReminderCustom('${k}')" style="padding:3px 8px;font-size:10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer">+ Tùy chỉnh</button>
+                </div>
+                <div id="reminders-${k}" style="display:flex;flex-wrap:wrap;gap:2px">${reminderChips}</div>
+              </div>
+
             </div>
           `;
         }).join('');
@@ -1659,12 +1789,12 @@
     }
     async function sendToCalendar() {
       const globalTitle = document.getElementById('ev-title').value.trim();
-      if (!globalTitle && !topics.length) { showToast('Thiếu thông tin', 'Nhập tên buổi hoặc chủ đề trước nhé!', false); return; }
+      if (!globalTitle && !groups.length) { showToast('Thiếu thông tin', 'Nhập tên buổi trước nhé!', false); return; }
 
-      // Save any typed values before reading
+      // Save text inputs before reading
       document.querySelectorAll('#slot-tasks-container [data-key][data-field]').forEach(el => {
         const k = el.dataset.key, f = el.dataset.field;
-        if (!slotState[k]) slotState[k] = getSlotState(k);
+        if (!slotState[k]) getSlotState(k);
         const map = {start:'start',end:'end',loc:'loc',task:'task',meetlink:'meetLink'};
         if (map[f]) slotState[k][map[f]] = el.value;
       });
@@ -1675,20 +1805,21 @@
 
       if (accessToken === null) {
         selectedMatchSlots.forEach(({ d, s }, i) => {
-          const k = `${d}-${s}`, st = getSlotState(k, s);
+          const k = `${d}-${s}`, st = getSlotState(k);
           const [defStart, defEnd] = SESSION_TIMES[s];
           const startTime = st.start || defStart, endTime = st.end || defEnd;
-          const title = (st.topic && topics.find(t=>t.name===st.topic)?.name) || globalTitle;
-          const ds = toLocalISO(weekDates[d]).replace(/-/g,'');
-          const [sh,sm] = startTime.split(':'),[eh,em] = endTime.split(':');
+          const groupName = getSlotGroup(k);
+          const title = groupName || globalTitle;
+          const ds = toLocalISO(weekDates[d]).replace(/-/g, '');
+          const [sh, sm2] = startTime.split(':'), [eh, em] = endTime.split(':');
           const descParts = [];
           if (st.task) descParts.push(st.task);
-          if (st.meetMode==='manual' && st.meetLink) descParts.push(`🔗 ${st.meetLink}`);
-          let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${ds}T${sh}${sm}00/${ds}T${eh}${em}00`;
+          if (st.meetMode === 'manual' && st.meetLink) descParts.push(`🔗 ${st.meetLink}`);
+          let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${ds}T${sh}${sm2}00/${ds}T${eh}${em}00`;
           if (descParts.length) url += `&details=${encodeURIComponent(descParts.join('\n\n'))}`;
           if (st.loc) url += `&location=${encodeURIComponent(st.loc)}`;
           if (emailsArray.length) url += `&add=${encodeURIComponent(emailsArray.join(','))}`;
-          setTimeout(() => window.open(url,'_blank'), i * 600);
+          setTimeout(() => window.open(url, '_blank'), i * 600);
         });
         showToast('Đang mở tab...', 'Hãy nhấn Lưu ở từng tab.', true);
         return;
@@ -1697,35 +1828,33 @@
       showToast('Đang xử lý...', `Đang đồng bộ ${selectedMatchSlots.length} buổi...`, true);
       let successCount = 0;
       for (const { d, s } of selectedMatchSlots) {
-        const k = `${d}-${s}`, st = getSlotState(k, s);
+        const k = `${d}-${s}`, st = getSlotState(k);
         const [defStart, defEnd] = SESSION_TIMES[s];
         const startTime = st.start || defStart, endTime = st.end || defEnd;
         const dateStr = toLocalISO(weekDates[d]);
-        const title = (st.topic && topics.find(t=>t.name===st.topic)?.name) || globalTitle;
+        const groupName = getSlotGroup(k);
+        const title = groupName || globalTitle;
         const descParts = [];
         if (st.task) descParts.push(st.task);
-        if (st.meetMode==='manual' && st.meetLink) descParts.push(`🔗 Meet/Zoom: ${st.meetLink}`);
+        if (st.meetMode === 'manual' && st.meetLink) descParts.push(`🔗 ${st.meetLink}`);
 
+        const remins = st.reminders.length ? st.reminders : [30];
         const eventData = {
           summary: title,
           location: st.loc || undefined,
           description: descParts.join('\n\n') || undefined,
           start: { dateTime: `${dateStr}T${startTime}:00`, timeZone: 'Asia/Ho_Chi_Minh' },
           end:   { dateTime: `${dateStr}T${endTime}:00`,   timeZone: 'Asia/Ho_Chi_Minh' },
-          attendees: emailsArray.map(e=>({email:e})),
-          reminders: {
-            useDefault: false,
-            overrides: (st.reminders.length ? st.reminders : [30]).map(m=>({method:'popup',minutes:m}))
-          }
+          attendees: emailsArray.map(e => ({ email: e })),
+          reminders: { useDefault: false, overrides: remins.map(m => ({ method: 'popup', minutes: m })) }
         };
         if (st.color) eventData.colorId = st.color;
         if (st.meetMode === 'auto') {
           eventData.conferenceData = { createRequest: { requestId: `gg-${k}-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } } };
         }
-
-        const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all' + (st.meetMode==='auto'?'&conferenceDataVersion=1':'');
+        const apiUrl = 'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all' + (st.meetMode==='auto'?'&conferenceDataVersion=1':'');
         try {
-          const res = await fetch(url, {
+          const res = await fetch(apiUrl, {
             method: 'POST',
             headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(eventData)
@@ -1734,11 +1863,8 @@
           else console.error('API error', await res.json());
         } catch(e) { console.error(e); }
       }
-      if (successCount === selectedMatchSlots.length) {
-        showToast('Hoàn thành! 🎉', `Đã đồng bộ ${successCount} buổi vào lịch.`, true);
-      } else {
-        showToast('Có lỗi', `Chỉ đồng bộ được ${successCount}/${selectedMatchSlots.length} buổi.`, false);
-      }
+      if (successCount === selectedMatchSlots.length) showToast('Hoàn thành! 🎉', `Đã đồng bộ ${successCount} buổi.`, true);
+      else showToast('Có lỗi', `Chỉ gửi được ${successCount}/${selectedMatchSlots.length}.`, false);
     }
 
     function deleteMember(id) {
@@ -1771,8 +1897,9 @@
     window.openAddMember = openAddMember;
     window.closeModal = closeModal;
     window.confirmAddMember = confirmAddMember;
-    window.addTopic = addTopic;
-    window.removeTopic = removeTopic;
+    window.addGroup = addGroup;
+    window.removeGroup = removeGroup;
+    window.toggleGroupSlot = toggleGroupSlot;
     window.saveSlotState = saveSlotState;
     window.sendToCalendar = sendToCalendar;
     window.handleAuthClick = handleAuthClick;
